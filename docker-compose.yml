@@ -1,0 +1,40 @@
+services:
+    laracats.test:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: 1000
+        image: sail-8.3/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '60:80'
+            - '6060:8080'
+            - '5160:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: 1000
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - pgsql
+    pgsql:
+        image: 'postgres:15'
+        ports:
+            - '6432:5432'
+        environment:
+            PGPASSWORD: 123456
+            POSTGRES_DB: laracats-test
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: 123456
+        networks:
+            - sail
+networks:
+    sail:
+        driver: bridge
